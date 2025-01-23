@@ -23,12 +23,14 @@ async function getMovieDetails(id: string) {
 
 async function getMovieTrailer(id: string) {
   // const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
-  // Directly using the API key
-const apiKey = "be3e130c5ee08bf14bc9078514f1999a";
+  const apiKey = "be3e130c5ee08bf14bc9078514f1999a";
   if (!apiKey) {
     throw new Error("TMDB API key is not set")
   }
-  const res = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${apiKey}`, {
+  // const res = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${apiKey}`, {
+  //   next: { revalidate: 3600 },
+  // })
+  const res = await fetch(`https://api.themoviedb.org/3/movie/${id}/videos?api_key=${apiKey}&primary_release_year=2025`, {
     next: { revalidate: 3600 },
   })
   if (!res.ok) {
