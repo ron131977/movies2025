@@ -137,18 +137,19 @@
 
 
 
+
 import MovieCard from "@/components/movie-card"
 import TvCard from "@/components/tv-card"
 import Loading from "@/components/loading"
+
 import { Suspense } from "react"
 
-// Helper to fetch movies
-async function getTrendingMovies() {
-  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
+// Directly using the API key
+const apiKey = "be3e130c5ee08bf14bc9078514f1999a";
 
+async function getTrendingMovies() {
   if (!apiKey) {
-    console.error("TMDB API key is not set. Please check your environment variables.")
-    return []
+    throw new Error("TMDB API key is not set")
   }
 
   try {
@@ -156,44 +157,34 @@ async function getTrendingMovies() {
       next: { revalidate: 3600 },
     })
 
-    // Log the response for debugging
-    const data = await res.json()
-    console.log("Trending Movies API Response:", data)
-
     if (!res.ok) {
       throw new Error(`Failed to fetch movies: ${res.status} ${res.statusText}`)
     }
 
-    return data.results || [] // If no results, return an empty array
+    const data = await res.json()
+    return data.results
   } catch (error) {
     console.error("Error fetching trending movies:", error)
     throw error
   }
 }
 
-// Helper to fetch TV shows
 async function getTrendingTVShows() {
-  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
-
   if (!apiKey) {
-    console.error("TMDB API key is not set. Please check your environment variables.")
-    return []
+    throw new Error("TMDB API key is not set")
   }
 
   try {
-    const res = await fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&first_air_date_year=2025`, {
+    const res = await fetch( `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&first_air_date_year=2025`, {
       next: { revalidate: 3600 },
     })
-
-    // Log the response for debugging
-    const data = await res.json()
-    console.log("Trending TV Shows API Response:", data)
 
     if (!res.ok) {
       throw new Error(`Failed to fetch TV shows: ${res.status} ${res.statusText}`)
     }
 
-    return data.results || [] // If no results, return an empty array
+    const data = await res.json()
+    return data.results
   } catch (error) {
     console.error("Error fetching trending TV shows:", error)
     throw error
@@ -214,18 +205,13 @@ export default async function Home() {
 
   return (
     <Suspense fallback={<Loading />}>
-      <h1
-        className="text-2xl font-bold mb-6"
-        style={{
-          marginTop: "30px",
-          fontFamily: "Poppins, sans-serif",
-          fontWeight: "bold",
-          fontSize: "35px",
-          textAlign: "center",
-        }}
-      >
-        Movie 2025
-      </h1>
+        <h1 className="text-2xl font-bold mb-6"  style={{
+             marginTop:"30px",
+            fontFamily: "Poppins, sans-serif",
+            fontWeight: "bold",
+            fontSize:"35px",
+            textAlign: "center",
+          }}> Movie 2025 </h1>
       <div className="p-8">
         <h2 className="text-2xl font-bold mb-6">Trending Movies</h2>
         {error ? (
@@ -276,35 +262,12 @@ export default async function Home() {
         </div>
 
         <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Featured Content</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Featured Trailer</h3>
-              <iframe
-                width="640"
-                height="360"
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                frameBorder="0"
-                scrolling="0"
-                allowFullScreen
-                className="w-full aspect-video"
-              ></iframe>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Additional Content</h3>
-              <iframe
-                width="640"
-                height="360"
-                src={movies.length > 0 ? `https://vidsrc.cc/v2/embed/movie/${movies[0].id}` : null}
-                frameBorder="0"
-                scrolling="0"
-                allowFullScreen
-                className="w-full aspect-video"
-              ></iframe>
-            </div>
+          <div>
+            {/* Featured content or other sections */}
           </div>
         </div>
       </div>
     </Suspense>
   )
 }
+
