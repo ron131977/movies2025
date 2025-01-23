@@ -140,14 +140,12 @@
 import MovieCard from "@/components/movie-card"
 import TvCard from "@/components/tv-card"
 import Loading from "@/components/loading"
-
 import { Suspense } from "react"
 
 // Helper to fetch movies
 async function getTrendingMovies() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
 
-  // Graceful handling if the key is missing
   if (!apiKey) {
     console.error("TMDB API key is not set. Please check your environment variables.")
     return []
@@ -158,12 +156,15 @@ async function getTrendingMovies() {
       next: { revalidate: 3600 },
     })
 
+    // Log the response for debugging
+    const data = await res.json()
+    console.log("Trending Movies API Response:", data)
+
     if (!res.ok) {
       throw new Error(`Failed to fetch movies: ${res.status} ${res.statusText}`)
     }
 
-    const data = await res.json()
-    return data.results
+    return data.results || [] // If no results, return an empty array
   } catch (error) {
     console.error("Error fetching trending movies:", error)
     throw error
@@ -174,7 +175,6 @@ async function getTrendingMovies() {
 async function getTrendingTVShows() {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
 
-  // Graceful handling if the key is missing
   if (!apiKey) {
     console.error("TMDB API key is not set. Please check your environment variables.")
     return []
@@ -185,12 +185,15 @@ async function getTrendingTVShows() {
       next: { revalidate: 3600 },
     })
 
+    // Log the response for debugging
+    const data = await res.json()
+    console.log("Trending TV Shows API Response:", data)
+
     if (!res.ok) {
       throw new Error(`Failed to fetch TV shows: ${res.status} ${res.statusText}`)
     }
 
-    const data = await res.json()
-    return data.results
+    return data.results || [] // If no results, return an empty array
   } catch (error) {
     console.error("Error fetching trending TV shows:", error)
     throw error
@@ -273,9 +276,35 @@ export default async function Home() {
         </div>
 
         <div className="mt-8">
-           
+          <h2 className="text-2xl font-bold mb-4">Featured Content</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-xl font-semibold mb-2">Featured Trailer</h3>
+              <iframe
+                width="640"
+                height="360"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                frameBorder="0"
+                scrolling="0"
+                allowFullScreen
+                className="w-full aspect-video"
+              ></iframe>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold mb-2">Additional Content</h3>
+              <iframe
+                width="640"
+                height="360"
+                src={movies.length > 0 ? `https://vidsrc.cc/v2/embed/movie/${movies[0].id}` : null}
+                frameBorder="0"
+                scrolling="0"
+                allowFullScreen
+                className="w-full aspect-video"
+              ></iframe>
+            </div>
           </div>
         </div>
+      </div>
     </Suspense>
   )
 }
