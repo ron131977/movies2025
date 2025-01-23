@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://movies2025.vercel.app/sitemap.xml
