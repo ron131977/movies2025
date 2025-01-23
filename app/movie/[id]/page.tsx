@@ -4,8 +4,8 @@ import { Star, Clock, Calendar } from "lucide-react"
 import { Suspense } from "react"
 
 async function getMovieDetails(id: string) {
-  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
-
+  // const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY
+  const apiKey = "be3e130c5ee08bf14bc9078514f1999a";
   if (!apiKey) {
     throw new Error("TMDB API key is not set")
   }
