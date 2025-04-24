@@ -333,8 +333,8 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
       images: [
         {
           url: image,
-          width: 780,
-          height: 1170,
+          width: 1280,
+          height: 720,
           alt: `${show.name} Poster`,
         },
       ],
