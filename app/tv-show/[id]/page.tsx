@@ -322,7 +322,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   }
 
   // const image = `https://image.tmdb.org/t/p/w780${show.poster_path}`
-  const image = `https://image.tmdb.org/t/p/w1280${movie.poster_path}`
+  const image = `https://image.tmdb.org/t/p/w1280${show.poster_path}`
 
   return {
     title: `${show.name} (${new Date(show.first_air_date).getFullYear()}) - Movie & TV Show`,
