@@ -12,7 +12,8 @@ export const metadata = {
   title: "Movie & Tv Show - Movie Reviews, Trailers & Information",
   description:
     "Discover the latest movies and TV shows with reviews, trailers, cast information and where to watch them legally.",
-  keywords: "movies, tv shows, reviews, trailers, cast, where to watch, cinema, film reviews",
+  keywords:
+    "movies, tv shows, reviews, trailers, cast, where to watch, cinema, film reviews",
   metadataBase: new URL("https://movieandtvshow.vercel.app"),
   openGraph: {
     type: "website",
@@ -22,15 +23,24 @@ export const metadata = {
     description:
       "Discover the latest movies and TV shows with reviews, trailers, cast information and where to watch them legally.",
     siteName: "Movie & Tv Show",
+    images: [
+      {
+        url: "https://movieandtvshow.vercel.app/og_image.jpg", // ✅ Replace with actual image URL
+        width: 1200,
+        height: 630,
+        alt: "Movie & Tv Show - OG Image",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Movie & Tv Show - Movie Reviews, Trailers & Information",
     description:
       "Discover the latest movies and TV shows with reviews, trailers, cast information and where to watch them legally.",
+    images: ["https://movieandtvshow.vercel.app/og_image.jpg"], // ✅ Replace with actual image URL
   },
-    generator: 'dr.trailer'
-}
+  generator: "dr.trailer",
+};
 
 export default function RootLayout({
   children,
