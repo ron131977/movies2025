@@ -316,6 +316,9 @@ export async function generateMetadata ({ params }: { params: { id: string } }) 
       description: 'The requested movie could not be found.'
     }
   }
+
+  const image = `https://image.tmdb.org/t/p/w780${movie.poster_path}`
+
   return {
     title: `${movie.title} (${new Date(
       movie.release_date
@@ -325,8 +328,24 @@ export async function generateMetadata ({ params }: { params: { id: string } }) 
       title: `${movie.title} (${new Date(
         movie.release_date
       ).getFullYear()}) - Movie & TV Show`,
-      description: movie.overview
-    }
+      description: movie.overview,
+      images: [
+        {
+          url: image,
+          width: 780,
+          height: 1170,
+          alt: `${movie.title} Poster`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${movie.title} (${new Date(
+        movie.release_date
+      ).getFullYear()}) - Movie & TV Show`,
+      description: movie.overview,
+      images: [image],
+    },
   }
 }
 

@@ -320,15 +320,33 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
       description: 'The requested TV show could not be found.',
     }
   }
+
+  const image = `https://image.tmdb.org/t/p/w780${show.poster_path}`
+
   return {
     title: `${show.name} (${new Date(show.first_air_date).getFullYear()}) - Movie & TV Show`,
     description: show.overview,
     openGraph: {
       title: `${show.name} (${new Date(show.first_air_date).getFullYear()}) - Movie & TV Show`,
       description: show.overview,
+      images: [
+        {
+          url: image,
+          width: 780,
+          height: 1170,
+          alt: `${show.name} Poster`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${show.name} (${new Date(show.first_air_date).getFullYear()}) - Movie & TV Show`,
+      description: show.overview,
+      images: [image],
     },
   }
 }
+
 
 export default async function TVPage({ params }: { params: { id: string } }) {
   const show = await getTVDetails(params.id)
