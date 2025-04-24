@@ -364,8 +364,55 @@ export default async function MoviePage ({
   const cast = movie.credits?.cast?.slice(0, 10) || []
   const reviews = movie.reviews?.results?.slice(0, 3) || []
 
+  const ldJsonData = {
+    "@context": "https://schema.org",
+    "@type": "Movie",
+    "name": movie.title,
+    "url": `https://movieandtvshow.vercel.app/movie/${params.id}`, // Replace with actual domain
+    "image": `https://image.tmdb.org/t/p/w780${movie.poster_path}`,
+    "description": movie.overview,
+    "datePublished": movie.release_date,
+    "genre": movie.genres?.map((g: any) => g.name),
+    "contentRating": movie.adult ? "R" : "PG-13",
+    "duration": `PT${Math.floor(movie.runtime / 60)}H${movie.runtime % 60}M`,
+    "actor": movie.credits?.cast?.slice(0, 5).map((actor: any) => ({
+      "@type": "Person",
+      "name": actor.name
+    })),
+    "director": {
+      "@type": "Person",
+      "name":
+        movie.credits?.crew?.find((c: any) => c.job === 'Director')?.name || ''
+    },
+    "creator": {
+      "@type": "Organization",
+      "name": movie.production_companies?.[0]?.name || ''
+    },
+    "inLanguage": "en",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": movie.vote_average,
+      "ratingCount": movie.vote_count
+    },
+    ...(trailer && {
+      "trailer": {
+        "@type": "VideoObject",
+        "name": trailer.name,
+        "embedUrl": `https://www.youtube.com/embed/${trailer.key}`,
+        "thumbnailUrl": `https://img.youtube.com/vi/${trailer.key}/hqdefault.jpg`,
+        "uploadDate": trailer.published_at || movie.release_date
+      }
+    })
+  };
+  
+
+
   return (
-    
+    <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(ldJsonData) }}
+    />
     <div className='flex flex-col gap-10 pb-10'>
     <div className="container pt-6">
       <Link
@@ -575,6 +622,8 @@ export default async function MoviePage ({
         </Tabs>
       </section>
     </div>
+    </>
+
   )
 }
 

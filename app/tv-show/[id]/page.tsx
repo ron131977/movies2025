@@ -295,7 +295,6 @@
 //   )
 // }
 
-
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -306,18 +305,20 @@ import { Star, Play, ExternalLink } from 'lucide-react'
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY
 
-async function getTVDetails(id: string) {
-  const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits,reviews`)
+async function getTVDetails (id: string) {
+  const res = await fetch(
+    `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&append_to_response=videos,credits,reviews`
+  )
   if (!res.ok) return null
   return res.json()
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata ({ params }: { params: { id: string } }) {
   const show = await getTVDetails(params.id)
   if (!show) {
     return {
       title: 'TV Show Not Found',
-      description: 'The requested TV show could not be found.',
+      description: 'The requested TV show could not be found.'
     }
   }
 
@@ -325,31 +326,36 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   const image = `https://image.tmdb.org/t/p/w1280${show.poster_path}`
 
   return {
-    title: `${show.name} (${new Date(show.first_air_date).getFullYear()}) - Movie & TV Show`,
+    title: `${show.name} (${new Date(
+      show.first_air_date
+    ).getFullYear()}) - Movie & TV Show`,
     description: show.overview,
     openGraph: {
-      title: `${show.name} (${new Date(show.first_air_date).getFullYear()}) - Movie & TV Show`,
+      title: `${show.name} (${new Date(
+        show.first_air_date
+      ).getFullYear()}) - Movie & TV Show`,
       description: show.overview,
       images: [
         {
           url: image,
           width: 1280,
           height: 720,
-          alt: `${show.name} Poster`,
-        },
-      ],
+          alt: `${show.name} Poster`
+        }
+      ]
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${show.name} (${new Date(show.first_air_date).getFullYear()}) - Movie & TV Show`,
+      title: `${show.name} (${new Date(
+        show.first_air_date
+      ).getFullYear()}) - Movie & TV Show`,
       description: show.overview,
-      images: [image],
-    },
+      images: [image]
+    }
   }
 }
 
-
-export default async function TVPage({ params }: { params: { id: string } }) {
+export default async function TVPage ({ params }: { params: { id: string } }) {
   const show = await getTVDetails(params.id)
   if (!show) return notFound()
 
@@ -359,190 +365,259 @@ export default async function TVPage({ params }: { params: { id: string } }) {
   const cast = show.credits?.cast?.slice(0, 10) || []
   const reviews = show.reviews?.results?.slice(0, 3) || []
 
+  const ldJsonData = {
+    '@context': 'https://schema.org',
+    '@type': 'TVSeries',
+    name: show.name,
+    url: `https://movieandtvshow.vercel.app/tv/${show.id}`, // Adjust to your routing pattern
+    image: `https://image.tmdb.org/t/p/w500${show.poster_path}`,
+    description: show.overview,
+    datePublished: show.first_air_date,
+    dateModified: show.last_air_date || show.first_air_date,
+    genre: show.genres?.map(genre => genre.name), // Assumes genres is an array of { id, name }
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: show.vote_average?.toFixed(1) || '0.0',
+      ratingCount: show.vote_count || 0
+    },
+    actor: show.credits?.cast?.slice(0, 2).map(actor => ({
+      '@type': 'Person',
+      name: actor.name
+    })) || [],
+    creator: {
+      '@type': 'Organization',
+      name: show.production_companies?.[0]?.name || 'Unknown'
+    },
+    inLanguage: 'en',
+    contentRating: show.contentRating || 'TV-MA',
+    numberOfSeasons: show.number_of_seasons,
+    numberOfEpisodes: show.number_of_episodes,
+    trailer: show.videos?.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube') && {
+      '@type': 'VideoObject',
+      name: show.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube').name,
+      embedUrl: `https://www.youtube.com/embed/${show.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube').key}`,
+      thumbnailUrl: `https://img.youtube.com/vi/${show.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube').key}/hqdefault.jpg`,
+      uploadDate: show.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube').published_at
+    }
+  }
+  
+
   return (
-    <div className='flex flex-col gap-10 pb-10'>
-    <div className="container pt-6">
-      <Link
-        href="/tv-shows"
-        className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:underline"
-      >
-        ← Back to Tv Show
-      </Link>
-    </div>
-      <section className='relative'>
-        <div className='absolute inset-0 bg-gradient-to-t from-background to-transparent z-10' />
-        <div
-          className='relative h-[50vh] bg-cover bg-center'
-          style={{
-            backgroundImage: `url(https://image.tmdb.org/t/p/original${show.backdrop_path})`,
-          }}
-        />
-        <div className='container relative z-20 -mt-40'>
-          <div className='flex flex-col md:flex-row gap-8'>
-            <div className='relative w-full max-w-[300px] aspect-[2/3] mx-auto md:mx-0'>
-              <Image
-                src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
-                alt={show.name}
-                fill
-                quality={90}
-                className='object-cover rounded-lg shadow-lg'
-                priority
-              />
-            </div>
-            <div className='flex-1'>
-              <h1 className='text-3xl md:text-4xl font-bold mb-2'>{show.name}</h1>
-              <div className='flex items-center gap-2 mb-4 flex-wrap'>
-                <span className='text-sm text-muted-foreground'>
-                  {new Date(show.first_air_date).getFullYear()}
-                </span>
-                <span className='text-sm text-muted-foreground'>•</span>
-                <span className='text-sm text-muted-foreground'>
-                  {show.genres.map((g: any) => g.name).join(', ')}
-                </span>
+    <>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(ldJsonData)
+        }}
+      />
+
+      <div className='flex flex-col gap-10 pb-10'>
+        <div className='container pt-6'>
+          <Link
+            href='/tv-shows'
+            className='inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:underline'
+          >
+            ← Back to Tv Show
+          </Link>
+        </div>
+        <section className='relative'>
+          <div className='absolute inset-0 bg-gradient-to-t from-background to-transparent z-10' />
+          <div
+            className='relative h-[50vh] bg-cover bg-center'
+            style={{
+              backgroundImage: `url(https://image.tmdb.org/t/p/original${show.backdrop_path})`
+            }}
+          />
+          <div className='container relative z-20 -mt-40'>
+            <div className='flex flex-col md:flex-row gap-8'>
+              <div className='relative w-full max-w-[300px] aspect-[2/3] mx-auto md:mx-0'>
+                <Image
+                  src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
+                  alt={show.name}
+                  fill
+                  quality={90}
+                  className='object-cover rounded-lg shadow-lg'
+                  priority
+                />
               </div>
-              <div className='flex items-center gap-2 mb-6'>
-                <Star className='h-5 w-5 text-yellow-500 fill-yellow-500' />
-                <span className='ml-1 font-medium'>{show.vote_average.toFixed(1)}/10</span>
-              </div>
-              <p className='text-muted-foreground mb-6' style={{ marginTop: '60px' }}>
-                {show.overview}
-              </p>
-              <div className='mb-6'>
-                <p className='font-medium mb-1'>Creators:{' '}
-                  <span className='text-muted-foreground'>
-                    {show.created_by.map((c: any) => c.name).join(', ')}
+              <div className='flex-1'>
+                <h1 className='text-3xl md:text-4xl font-bold mb-2'>
+                  {show.name}
+                </h1>
+                <div className='flex items-center gap-2 mb-4 flex-wrap'>
+                  <span className='text-sm text-muted-foreground'>
+                    {new Date(show.first_air_date).getFullYear()}
                   </span>
-                </p>
-                <p className='font-medium mb-1'>Cast:{' '}
-                  <span className='text-muted-foreground'>
-                    {cast.map((a: any) => a.name).join(', ')}
+                  <span className='text-sm text-muted-foreground'>•</span>
+                  <span className='text-sm text-muted-foreground'>
+                    {show.genres.map((g: any) => g.name).join(', ')}
                   </span>
+                </div>
+                <div className='flex items-center gap-2 mb-6'>
+                  <Star className='h-5 w-5 text-yellow-500 fill-yellow-500' />
+                  <span className='ml-1 font-medium'>
+                    {show.vote_average.toFixed(1)}/10
+                  </span>
+                </div>
+                <p
+                  className='text-muted-foreground mb-6'
+                  style={{ marginTop: '60px' }}
+                >
+                  {show.overview}
                 </p>
-              </div>
-              {trailer && (
-                <Button asChild>
-                  <Link href='#trailer'>
-                    <Play className='mr-2 h-5 w-5' /> Watch Trailer
-                  </Link>
-                </Button>
-              )}
-           <div className='mt-6'>
-                <p className='text-lg mb-2 font-bold'>Where to Watch:</p>
-                <div className='flex flex-wrap gap-2'>
-                  {[
-                    {
-                      name: 'Justwatch Free',
-                      url: `https://justwatchfree.vercel.app/tv/${params.id}`
-                    },
-                    {
-                      name: 'Video Stream Hub',
-                      url: `https://videostreamhub.vercel.app/tv/${params.id}`
-                    },
-                    {
-                      name: 'Tiny Movie Zone',
-                      url: `https://tinymoviezone.vercel.app/tv/${params.id}`
-                    }
-                  ].map(platform => (
-                    <Button
-                      key={platform.name}
-                      variant='secondary'
-                      size='sm'
-                      asChild
-                    >
-                      <Link
-                        href={platform.url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='flex items-center group border-2 border-transparent transition-all duration-300 p-2 hover:border-gray-400 hover:shadow-lg hover:bg-gray-100'
+                <div className='mb-6'>
+                  <p className='font-medium mb-1'>
+                    Creators:{' '}
+                    <span className='text-muted-foreground'>
+                      {show.created_by.map((c: any) => c.name).join(', ')}
+                    </span>
+                  </p>
+                  <p className='font-medium mb-1'>
+                    Cast:{' '}
+                    <span className='text-muted-foreground'>
+                      {cast.map((a: any) => a.name).join(', ')}
+                    </span>
+                  </p>
+                </div>
+                {trailer && (
+                  <Button asChild>
+                    <Link href='#trailer'>
+                      <Play className='mr-2 h-5 w-5' /> Watch Trailer
+                    </Link>
+                  </Button>
+                )}
+                <div className='mt-6'>
+                  <p className='text-lg mb-2 font-bold'>Where to Watch:</p>
+                  <div className='flex flex-wrap gap-2'>
+                    {[
+                      {
+                        name: 'Justwatch Free',
+                        url: `https://justwatchfree.vercel.app/tv/${params.id}`
+                      },
+                      {
+                        name: 'Video Stream Hub',
+                        url: `https://videostreamhub.vercel.app/tv/${params.id}`
+                      },
+                      {
+                        name: 'Tiny Movie Zone',
+                        url: `https://tinymoviezone.vercel.app/tv/${params.id}`
+                      }
+                    ].map(platform => (
+                      <Button
+                        key={platform.name}
+                        variant='secondary'
+                        size='sm'
+                        asChild
                       >
-                        {platform.name}
-                        <ExternalLink className='ml-2 h-3 w-3 transition-transform duration-200 group-hover:scale-110' />
-                      </Link>
-                    </Button>
-                  ))}
+                        <Link
+                          href={platform.url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='flex items-center group border-2 border-transparent transition-all duration-300 p-2 hover:border-gray-400 hover:shadow-lg hover:bg-gray-100'
+                        >
+                          {platform.name}
+                          <ExternalLink className='ml-2 h-3 w-3 transition-transform duration-200 group-hover:scale-110' />
+                        </Link>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {trailer && (
-        <section className='container' id='trailer'>
-          <h2 className='text-2xl font-bold mb-6'>Trailer</h2>
-          <YoutubePlayer videoId={trailer.key} />
         </section>
-      )}
 
-      <section className='container'>
-        <Tabs defaultValue='about'>
-          <TabsList className='mb-6'>
-            <TabsTrigger value='about'>About</TabsTrigger>
-            <TabsTrigger value='reviews'>Reviews</TabsTrigger>
-            <TabsTrigger value='cast'>Cast & Crew</TabsTrigger>
-          </TabsList>
+        {trailer && (
+          <section className='container' id='trailer'>
+            <h2 className='text-2xl font-bold mb-6'>Trailer</h2>
+            <YoutubePlayer videoId={trailer.key} />
+          </section>
+        )}
 
-          <TabsContent value='about'>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-              <div className='md:col-span-2'>
-                <h3 className='text-xl font-bold mb-4'>Synopsis</h3>
-                <p className='text-muted-foreground mb-6'>{show.overview}</p>
-              </div>
-              <div>
-                <h3 className='text-xl font-bold mb-4'>Show Details</h3>
-                <div className='space-y-4'>
-                  <div><p className='font-medium'>First Air Date</p><p className='text-muted-foreground'>{show.first_air_date}</p></div>
-                  <div><p className='font-medium'>Seasons</p><p className='text-muted-foreground'>{show.number_of_seasons}</p></div>
-                  <div><p className='font-medium'>Episodes</p><p className='text-muted-foreground'>{show.number_of_episodes}</p></div>
-                  <div><p className='font-medium'>Language</p><p className='text-muted-foreground'>{show.original_language.toUpperCase()}</p></div>
+        <section className='container'>
+          <Tabs defaultValue='about'>
+            <TabsList className='mb-6'>
+              <TabsTrigger value='about'>About</TabsTrigger>
+              <TabsTrigger value='reviews'>Reviews</TabsTrigger>
+              <TabsTrigger value='cast'>Cast & Crew</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value='about'>
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+                <div className='md:col-span-2'>
+                  <h3 className='text-xl font-bold mb-4'>Synopsis</h3>
+                  <p className='text-muted-foreground mb-6'>{show.overview}</p>
+                </div>
+                <div>
+                  <h3 className='text-xl font-bold mb-4'>Show Details</h3>
+                  <div className='space-y-4'>
+                    <div>
+                      <p className='font-medium'>First Air Date</p>
+                      <p className='text-muted-foreground'>
+                        {show.first_air_date}
+                      </p>
+                    </div>
+                    <div>
+                      <p className='font-medium'>Seasons</p>
+                      <p className='text-muted-foreground'>
+                        {show.number_of_seasons}
+                      </p>
+                    </div>
+                    <div>
+                      <p className='font-medium'>Episodes</p>
+                      <p className='text-muted-foreground'>
+                        {show.number_of_episodes}
+                      </p>
+                    </div>
+                    <div>
+                      <p className='font-medium'>Language</p>
+                      <p className='text-muted-foreground'>
+                        {show.original_language.toUpperCase()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value='reviews'>
-            <div className='space-y-8'>
-              {reviews.map((review: any) => (
-                <div key={review.id} className='p-6 border rounded-lg'>
-                  <p className='font-medium mb-2'>{review.author}</p>
-                  <p className='text-muted-foreground'>{review.content}</p>
-                </div>
-              ))}
-            </div>
-          </TabsContent>
+            <TabsContent value='reviews'>
+              <div className='space-y-8'>
+                {reviews.map((review: any) => (
+                  <div key={review.id} className='p-6 border rounded-lg'>
+                    <p className='font-medium mb-2'>{review.author}</p>
+                    <p className='text-muted-foreground'>{review.content}</p>
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
 
-          <TabsContent value='cast'>
-            <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6'>
-              {cast.map((actor: any) => (
-                <div key={actor.id} className='text-center'>
-                  <Image
-                    src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
-                    alt={actor.name}
-                    width={120}
-                    height={180}
-                    quality={90}
-                    className='rounded-md mx-auto mb-2'
-                    style={{
-                      filter:
-                        'contrast(1.3) saturate(1.3) brightness(1.05) hue-rotate(10deg)'
-                    }}
-                  />
-                  <p className='font-medium'>{actor.name}</p>
-                  <p className='text-sm text-muted-foreground'>{actor.character}</p>
-                </div>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </section>
-    </div>
+            <TabsContent value='cast'>
+              <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6'>
+                {cast.map((actor: any) => (
+                  <div key={actor.id} className='text-center'>
+                    <Image
+                      src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
+                      alt={actor.name}
+                      width={120}
+                      height={180}
+                      quality={90}
+                      className='rounded-md mx-auto mb-2'
+                      style={{
+                        filter:
+                          'contrast(1.3) saturate(1.3) brightness(1.05) hue-rotate(10deg)'
+                      }}
+                    />
+                    <p className='font-medium'>{actor.name}</p>
+                    <p className='text-sm text-muted-foreground'>
+                      {actor.character}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </section>
+      </div>
+    </>
   )
 }
-
-
-
-
-
-
-
-
