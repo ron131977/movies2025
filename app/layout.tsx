@@ -26,8 +26,8 @@ export const metadata = {
     images: [
       {
         url: "https://movieandtvshow.vercel.app/og_image.jpg", // ✅ Replace with actual image URL
-        width: 1200,
-        height: 630,
+        width: 1280,
+        height: 720,
         alt: "Movie & Tv Show - OG Image",
       },
     ],
