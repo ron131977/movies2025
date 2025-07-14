@@ -84,6 +84,7 @@ export const metadata = {
   keywords:
     "movies, tv shows, reviews, trailers, cast, where to watch, cinema, film reviews",
   metadataBase: new URL("https://movieandtvshow.vercel.app"),
+  google-adsense-account: "ca-pub-9514296812201677"
   openGraph: {
     type: "website",
     locale: "en_US",
