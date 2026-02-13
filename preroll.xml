@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="3.0">
+  <Ad id="1">
+    <InLine>
+      <AdSystem>CustomImageAd</AdSystem>
+      <AdTitle>10 Second Image Preroll</AdTitle>
+
+      <Creatives>
+        <Creative sequence="1">
+          <Linear>
+            <Duration>00:00:10</Duration>
+
+            <MediaFiles>
+              <MediaFile
+                delivery="progressive"
+                type="video/mp4"
+                width="1280"
+                height="720">
+                <![CDATA[
+https://cdn.jsdelivr.net/gh/verdsouza/veroads@main/preroll.mp4
+                ]]>
+              </MediaFile>
+            </MediaFiles>
+
+          </Linear>
+        </Creative>
+      </Creatives>
+
+    </InLine>
+  </Ad>
+</VAST>
